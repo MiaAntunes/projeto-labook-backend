@@ -34,7 +34,9 @@ app.get('/posts', posts.getPosts)
 
 app.post('/posts', posts.postPosts)
 
-app.put('/post', posts.putPosts) // Será editado tanto o content, quanto o updated_at
+app.put('/post/:id', posts.putPosts)
+
+app.delete('/post/:id', posts.deletePost)
 
 // * Like Deslike
-app.post('/post-details-likeDeslike', likesDeslikes.postLikeDeslike) // ! Como faz isso? -- Like e deslike no post
+app.put('/posts/:id/like', likesDeslikes.postLikeDeslike) // ! Como faz isso? -- Like e deslike no post

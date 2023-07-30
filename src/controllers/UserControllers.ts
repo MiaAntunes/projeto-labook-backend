@@ -6,7 +6,7 @@ import { TUsersDB, TUsersView, USER_ROLES } from "../types";
 
 export class UserControllers {
 
-    // * Login
+    // * Login - Testei OK
     public getUser = async (req: Request, res: Response) => {
         try {
             const email = req.body.email as string
@@ -55,6 +55,7 @@ export class UserControllers {
 
 
             res.status(200).send(resultUser)
+            // ! fazer uma resposta de TOKEN 
         }
         catch (error: any) {
             console.log(error)
@@ -69,14 +70,14 @@ export class UserControllers {
 
     }
 
-    // * Sign Up
+    // * Sign Up - Não testei
     public postUser = async (req: Request, res: Response) => {
         try {
-            const newId = req.body.id as string
+            const newId = req.body.id as string // !Não 
             const newName = req.body.name as string
             const newEmail = req.body.email as string
             const newPassword = req.body.password as string
-            const newROLE = req.body.USER_ROLE as string
+            const newROLE = req.body.USER_ROLE as USER_ROLES // !Não 
 
             const usersDatabase = new UserDatabase();
             const [verificationUserExist] = await usersDatabase.findUserId(newId)
@@ -116,7 +117,7 @@ export class UserControllers {
 
                 const regexEmail = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
                 const isValidEmail = regexEmail.test(newEmail);// 
-                if (!isValidEmail) { // ! 
+                if (!isValidEmail) { // 
                     res.statusCode = 400
                     throw new Error("O email está incompleto, exemplo: 'usuario@email.com' .")
                 }
@@ -145,10 +146,10 @@ export class UserControllers {
                     throw new Error("O USER_ROLE deve ser do tipo 'string'.")
                 } 
                 // ! O que seria esse erro?
-                if (newROLE !== USER_ROLES.ADMIN || newROLE !== USER_ROLES.NORMAL ) { //
-                    res.statusCode = 400
-                    throw new Error("O USER_ROLE deve ser NORMAL ou ADMIN.")
-                } 
+                // if (newROLE !== USER_ROLES.ADMIN || newROLE !== USER_ROLES.NORMAL ) { //
+                //     res.statusCode = 400
+                //     throw new Error("O USER_ROLE deve ser NORMAL ou ADMIN.")
+                // } 
 
             }else{
                 res.status(400)
@@ -164,11 +165,8 @@ export class UserControllers {
                 created_at: new Date().toISOString()
             }
 
-
-            // console.log(verificationEmailExist)
-
-
             res.status(200).send("ok")
+             // ! fazer uma resposta de TOKEN 
         }
         catch (error: any) {
             console.log(error)

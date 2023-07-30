@@ -13,8 +13,8 @@ CREATE TABLE posts (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     creator_id TEXT NOT NULL,
     content TEXT UNIQUE NOT NULL,
-    likes TEXT NOT NULL,
-    deslikes TEXT NOT NULL,
+    likes INTEGER NOT NULL,
+    deslikes INTEGER NOT NULL,
     created_at TEXT DEFAULT (DATETIME()) NOT NULL,
     updated_at TEXT DEFAULT (DATETIME()) NOT NULL,
     FOREIGN KEY (creator_id) REFERENCES users(id)
@@ -40,3 +40,8 @@ VALUES
     ("u002", "Sarah Jane", "sarahJS@hotmail.com","loveK9123!", "NORMAL"),
     ("u003", "miau", "miau@hotmail.com","doctorWHO?1963", "NORMAL"),
     ("u004", "maya", "maya@hotmail.com","doctorWHO?1963", "NORMAL");
+
+INSERT INTO posts(id,creator_id,content,likes,deslikes)
+VALUES 
+    ("p001","u001","Good Morning", 3, 1),
+    ("p002","u002","Good Night", 3, 0);
