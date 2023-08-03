@@ -2,59 +2,29 @@ import { Request, Response } from "express";
 import { UserDatabase } from "../sql/heranças/UsersDatabase";
 import { UserModels } from "../models/Users";
 import { TUsersDB, TUsersView, USER_ROLES } from "../types";
+import { UsersBusiness } from "../business/UsersBusiness";
+import { CreateUserSchema } from "../dto/UserDTO/createUserdto";
 
 
 export class UserControllers {
 
-    // * Login - Testei OK
+    constructor(
+        private userBusiness:UsersBusiness
+    ){}
+
+    // Login - TESTEi OK
     public getUser = async (req: Request, res: Response) => {
         try {
-            const email = req.body.email as string
-            const password = req.body.password as string
 
-            const usersDatabase = new UserDatabase()
-            const [verificationEmailExist] = await usersDatabase.findUserEmail(email)
-
-            if (!verificationEmailExist) {
-                res.status(400)
-                throw new Error("Esse conta não existe, faça o cadastro dela!")
+            const input = {
+                email: req.body.email as string,
+                password: req.body.password as string
             }
 
-            if (email && password) {
+            const response = await this.userBusiness.getUser(input)
+            // console.log(response)
 
-                //Email
-                if (typeof email !== "string") {
-                    res.status(400)
-                    throw new Error("O email precisa ser uma string")
-                }
-                if (email !== verificationEmailExist.email) {
-                    res.status(400)
-                    throw new Error("O email está incorreto, tente novamente!")
-                }
-
-                //Password
-                if (typeof password !== "string") {
-                    res.status(400)
-                    throw new Error("O password precisa ser uma string!")
-                }
-                if (password !== verificationEmailExist.password) {
-                    res.status(400)
-                    throw new Error("O password está incorreto, tente novamente!")
-                }
-            }else{
-                res.status(400)
-                throw new Error("É obrigatório o email e password!")
-            }
-
-            const resultUser:TUsersView = {
-                id: verificationEmailExist.id,
-                name: verificationEmailExist.name,
-                email: verificationEmailExist.email,
-                createdAt: verificationEmailExist.created_at
-            }
-
-
-            res.status(200).send(resultUser)
+            res.status(200).send(response)
             // ! fazer uma resposta de TOKEN 
         }
         catch (error: any) {
@@ -70,102 +40,21 @@ export class UserControllers {
 
     }
 
-    // * Sign Up - Não testei
+    // Sign Up - TESTEi OK
     public postUser = async (req: Request, res: Response) => {
         try {
-            const newId = req.body.id as string // !Não 
-            const newName = req.body.name as string
-            const newEmail = req.body.email as string
-            const newPassword = req.body.password as string
-            const newROLE = req.body.USER_ROLE as USER_ROLES // !Não 
 
-            const usersDatabase = new UserDatabase();
-            const [verificationUserExist] = await usersDatabase.findUserId(newId)
+            const input = CreateUserSchema.parse({
+                newId: req.body.id , // !Não 
+                newName: req.body.name,
+                newEmail: req.body.email,
+                newPassword:  req.body.password, 
+            })
 
-            console.log(verificationUserExist)
+            const response = await  this.userBusiness.postUser(input)
 
-            if(newId && newName && newEmail && newPassword && newROLE){
 
-                // Id
-                if (typeof newId !== "string") { //
-                    res.statusCode = 400
-                    throw new Error("O id deve ser do tipo 'string'.")
-                } if (newId.length <= 4) { //
-                    res.statusCode = 400
-                    throw new Error("O id deve ter mais 3 caracteres, exemplo: u000.")
-                }
-                if (verificationUserExist.id === newId) { // 
-                    res.statusCode = 400
-                    throw new Error("Esse id já está cadastrado, tente outro novamente.")
-                }
-
-                // Name
-                if (typeof newName !== "string") { //
-                    res.statusCode = 400
-                    throw new Error("O name deve ser do tipo 'string'.")
-                } 
-                if (newName.length <= 3) { //
-                    res.statusCode = 400
-                    throw new Error("O name deve ter mais 3 caracteres, exemplo: fulano.")
-                }
-
-                // Email
-                if (typeof newEmail !== "string") { //
-                    res.statusCode = 400
-                    throw new Error("O email deve ser do tipo 'string'.")
-                } 
-
-                const regexEmail = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
-                const isValidEmail = regexEmail.test(newEmail);// 
-                if (!isValidEmail) { // 
-                    res.statusCode = 400
-                    throw new Error("O email está incompleto, exemplo: 'usuario@email.com' .")
-                }
-
-                if(verificationUserExist.email === newEmail){
-                    res.statusCode = 400
-                    throw new Error("Esse email já existe.")
-                }
-
-                // Password
-                if (typeof newPassword !== "string") { //
-                    res.statusCode = 400
-                    throw new Error("O password deve ser do tipo 'string'.")
-                } 
-
-                const regexPassword = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
-                const isValidPassword = regexPassword.test(newPassword)
-                if (!isValidPassword) {// OK
-                    res.statusCode = 400
-                    throw new Error(" O password deve ter no mínimo 8 caractere, contendo pelo menos uma letra maiúscula, uma letra minúscula, um número e pelo menos um caractere especial.")
-                }
-
-                // USER_ROLE
-                if (typeof newROLE !== "string") { //
-                    res.statusCode = 400
-                    throw new Error("O USER_ROLE deve ser do tipo 'string'.")
-                } 
-                // ! O que seria esse erro?
-                // if (newROLE !== USER_ROLES.ADMIN || newROLE !== USER_ROLES.NORMAL ) { //
-                //     res.statusCode = 400
-                //     throw new Error("O USER_ROLE deve ser NORMAL ou ADMIN.")
-                // } 
-
-            }else{
-                res.status(400)
-                throw new Error("Para criar um novo deverá ter um id, name, email, password, USER_ROLE.")
-            }
-
-            const userDB:TUsersDB = {
-                id:newId,
-                name:newName,
-                email: newEmail,
-                password: newPassword,
-                role:newROLE,
-                created_at: new Date().toISOString()
-            }
-
-            res.status(200).send("ok")
+            res.status(200).send(response.message)
              // ! fazer uma resposta de TOKEN 
         }
         catch (error: any) {
