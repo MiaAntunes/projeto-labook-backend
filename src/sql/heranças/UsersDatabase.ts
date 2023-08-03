@@ -19,7 +19,7 @@ export class UserDatabase extends BaseDatabase {
         let results: TUsersDB[] = [];
 
         results = await BaseDatabase.connection('users').where({id: newId})
-        // console.log(results)
+        console.log(results)
 
         return results
     }

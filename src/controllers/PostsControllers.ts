@@ -2,36 +2,23 @@ import { Request, Response } from "express";
 import { PostsDatabase } from "../sql/heranças/PostsDataBase";
 import { PostsModels } from "../models/Posts";
 import { TPostsDBCreate, TPostsView } from "../types";
+import { PostsBusiness } from "../business/PostsBusiness";
+import { CreatePostSchema } from "../dto/PostDTO/createPostdto";
 
 
 export class PostsControllers {
+    constructor(
+       private postsBusiness: PostsBusiness
+    ){}
 
-    // * Get Posts - OK !
+    // Get Posts - OK ESTÁ PEGANDO
     public getPosts = async (req: Request, res: Response) => {
         try {
             // * Tem um headers.authorization
-            const postDatabase = new PostsDatabase()
-            const getPosts = await postDatabase.getPosts()
-            // console.log(getPosts)
+            const results = await this.postsBusiness.getPosts()
+            // console.log(results)
 
-            const resultsPosts: TPostsView[] = getPosts.map((post) => {
-                const result: TPostsView = {
-                    id: post.id,
-                    content: post.content,
-                    likes: post.likes,
-                    deslikes: post.deslikes,
-                    createdAt: post.created_at,
-                    updatedAt: post.updated_at,
-                    creator: {
-                        id: post.id,
-                        name: post.name
-                    },
-                }
-                return result
-            })
-
-
-            res.status(200).send(resultsPosts)
+            res.status(200).send(results)
         }
         catch (error: any) {
             console.log(error)
@@ -44,39 +31,19 @@ export class PostsControllers {
         }
     }
 
-    // * Post Posts - OK !
+    //  Post Posts - OK ESTÁ PEGANDO
     public postPosts = async (req: Request, res: Response) => {
         try {
             //Tem um headers.authorization
-            const id = req.params.id as string
-            const newContent = req.body.content as string
 
-            const postDataBase = new PostsDatabase()
+            const input = CreatePostSchema.parse({
+                idUser: req.params.id as string,
+                newContent: req.body.content as string
+            })
 
-            // ! Dúvidas
-            const newPost = new PostsModels(
-                "p003",
-                "u001",
-                newContent,
-                0,
-                0,
-                new Date().toISOString(),
-                new Date().toISOString()
-            )
+            const results = await this.postsBusiness.postPosts(input)
 
-            const newPostsDB: TPostsDBCreate = {
-                id: newPost.getId(),
-                creator_id: newPost.getCreatorId(),
-                content: newPost.getContent(),
-                likes: newPost.getLikes(),
-                deslikes: newPost.getDeslikes(),
-                created_at: newPost.getCreatedAt(),
-                updated_at: newPost.getUpdatedAt()
-            }
-
-            await postDataBase.insertPosts(newPostsDB)
-
-            res.status(200).send("Criado o novo Post")
+            res.status(200).send(results.message)
         }
         catch (error: any) {
             console.log(error)
@@ -90,60 +57,19 @@ export class PostsControllers {
 
     }
 
-    // * Put Posts - OK !
+    // Put Posts - OK ESTÁ PEGANDO
     public putPosts = async (req: Request, res: Response) => {
         //Tem um headers.authorization
         try {
-            const id = req.params.id as string
-            const newContent = req.body.content as string
 
-            const postDataBase = new PostsDatabase()
-            const [verificationPostExist] = await postDataBase.findPost(id)
-            // console.log(verificationPostExist)
-
-            if (!verificationPostExist) {
-                res.status(400)
-                throw new Error("Esse post não existe, crie um novo post!")
+            const input= {
+                idPost: req.params.id as string,
+                newContent: req.body.content as string
             }
 
-            const updatePost = new PostsModels(
-                verificationPostExist.id,
-                verificationPostExist.creator_id,
-                verificationPostExist.content,
-                verificationPostExist.likes,
-                verificationPostExist.deslikes,
-                verificationPostExist.created_at,
-                verificationPostExist.updated_at
-            )
+            const result = await this.postsBusiness.putPosts(input)
 
-            // Verificação
-            if (newContent) {
-                if (typeof newContent !== "string") {
-                    res.status(400)
-                    throw new Error("O content precisa ser uma string.")
-                }
-                if (newContent.length <= 1) {
-                    res.status(400)
-                    throw new Error("O content precisa ter mais que um caracter.")
-                }
-
-                updatePost.setContent(newContent)
-                updatePost.setUpdatedAt(new Date().toISOString())
-            }
-
-            const updatePostDB: TPostsDBCreate = {
-                id: updatePost.getId(),
-                creator_id: updatePost.getCreatorId(),
-                content: updatePost.getContent(),
-                likes: updatePost.getLikes(),
-                deslikes: updatePost.getDeslikes(),
-                created_at: updatePost.getCreatedAt(),
-                updated_at: updatePost.getUpdatedAt()
-            }
-
-            await postDataBase.updatePost(updatePostDB)
-
-            res.status(200).send("Seu post foi editado com sucesso.")
+            res.status(200).send(result.message)
 
         }
         catch (error: any) {
@@ -158,23 +84,17 @@ export class PostsControllers {
 
     }
 
-    // * Delete Post - OK!
+    // * Delete Post - 
     public deletePost = async (req: Request, res: Response) => {
         try {
             //Tem um headers.authorization
-            const idPost = req.params.id
-
-            const postDataBase = new PostsDatabase()
-            const [verificationPostExist] = await postDataBase.findPost(idPost)
-
-            if (!verificationPostExist) {
-                res.status(400)
-                throw new Error("Esse post não existe ou id está errado")
+            const input = {
+                idPost:req.params.id
             }
 
-            await postDataBase.deletePost(idPost)
+            const result = await this.postsBusiness.deletePost(input)
 
-            res.status(200).send("Seu post foi deletado com sucesso.")
+            res.status(200).send(result.message)
         }
         catch (error: any) {
             console.log(error)

@@ -3,12 +3,14 @@ import { BaseDatabase } from "../BaseDatabase";
 
 
 export class PostsDatabase extends BaseDatabase {
-    // * Find User by Id
-    public async findPost(idPost: string): Promise<TPostsDB[]> {
+    
+    // * Find Post by Id
+    public async findPost(idPost: any): Promise<TPostsDB[]> {
 
         let results: TPostsDB[] = []
 
         results = await BaseDatabase.connection('posts').where({ id: idPost })
+        console.log(results)
 
         return results
 
