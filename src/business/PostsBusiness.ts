@@ -1,4 +1,6 @@
 import { CreatePostInputDto, CreatePostOutInputDto } from "../dto/PostDTO/createPostdto"
+import { EditPostInputDTO, EditPostOutinputDTO } from "../dto/PostDTO/editPostdto"
+import { BadRequestError } from "../errors/BadRequestError"
 import { PostsModels } from "../models/Posts"
 import { PostsDatabase } from "../sql/heranças/PostsDataBase"
 import { UserDatabase } from "../sql/heranças/UsersDatabase"
@@ -79,7 +81,7 @@ export class PostsBusiness {
     }
 
     //Put Posts - OK ESTÁ PEGANDO
-    public putPosts = async (input:any) =>{
+    public putPosts = async (input:EditPostInputDTO): Promise <EditPostOutinputDTO> =>{
         
         const {idPost, newContent} = input
         
@@ -87,7 +89,7 @@ export class PostsBusiness {
         // console.log(verificationPostExist)
 
         if (!verificationPostExist) {
-            throw new Error("Esse post não existe, crie um novo post!")
+            throw new BadRequestError("Esse post não existe, crie um novo post!")
         }
 
         const updatePost = new PostsModels(
@@ -102,13 +104,6 @@ export class PostsBusiness {
 
         // Verificação
         if (newContent) {
-            if (typeof newContent !== "string") {
-                throw new Error("O content precisa ser uma string.")
-            }
-            if (newContent.length <= 1) {
-                throw new Error("O content precisa ter mais que um caracter.")
-            }
-
             updatePost.setContent(newContent)
             updatePost.setUpdatedAt(new Date().toISOString())
         }
@@ -140,7 +135,7 @@ export class PostsBusiness {
         const [verificationPostExist] = await this.postDatabase.findPost(idPost)
 
         if (!verificationPostExist) {
-            throw new Error("Esse post não existe ou id está errado")
+            throw new BadRequestError("Esse post não existe ou id está errado")
         }
 
         await this.postDatabase.deletePost(idPost)

@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
-import { UserDatabase } from "../sql/heranças/UsersDatabase";
-import { UserModels } from "../models/Users";
-import { TUsersDB, TUsersView, USER_ROLES } from "../types";
 import { UsersBusiness } from "../business/UsersBusiness";
 import { CreateUserSchema } from "../dto/UserDTO/createUserdto";
+import { BaseError } from "../errors/BaseError";
+import { ZodError } from "zod";
 
 
 export class UserControllers {
@@ -30,14 +29,14 @@ export class UserControllers {
         catch (error: any) {
             console.log(error)
 
-            if (res.statusCode === 200) {
-                res.status(500)
-            }
-
-            res.send(error.message)
+            if (error instanceof ZodError) {
+                res.status(400).send(error.issues)
+              } else if (error instanceof BaseError) {
+                res.status(error.statusCode).send(error.message)
+              } else {
+                res.status(500).send("Erro inesperado")
+              }
         }
-
-
     }
 
     // Sign Up - TESTEi OK
@@ -60,11 +59,13 @@ export class UserControllers {
         catch (error: any) {
             console.log(error)
 
-            if (res.statusCode === 200) {
-                res.status(500)
-            }
-
-            res.send(error.message)
+            if (error instanceof ZodError) {
+                res.status(400).send(error.issues)
+              } else if (error instanceof BaseError) {
+                res.status(error.statusCode).send(error.message)
+              } else {
+                res.status(500).send("Erro inesperado")
+              }
         }
     }
 }
