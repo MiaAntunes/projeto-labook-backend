@@ -1,4 +1,5 @@
 import { CreateUserInputDto } from "../dto/UserDTO/createUserdto"
+import { BadRequestError } from "../errors/BadRequestError"
 import { UserDatabase } from "../sql/heranças/UsersDatabase"
 import { TUsersDB, TUsersView, USER_ROLES,} from "../types"
 
@@ -17,28 +18,28 @@ export class UsersBusiness {
         const [verificationEmailExist] = await this.usersDatabase.findUserEmail(email)
 
         if (!verificationEmailExist) {
-            throw new Error("Esse conta não existe, faça o cadastro dela!")
+            throw new BadRequestError("Esse conta não existe, faça o cadastro dela!")
         }
 
         if (email && password) {
 
             //Email
             if (typeof email !== "string") {
-                throw new Error("O email precisa ser uma string")
+                throw new BadRequestError("O email precisa ser uma string")
             }
             if (email !== verificationEmailExist.email) {
-                throw new Error("O email está incorreto, tente novamente!")
+                throw new BadRequestError("O email está incorreto, tente novamente!")
             }
 
             //Password
             if (typeof password !== "string") {
-                throw new Error("O password precisa ser uma string!")
+                throw new BadRequestError("O password precisa ser uma string!")
             }
             if (password !== verificationEmailExist.password) {
-                throw new Error("O password está incorreto, tente novamente!")
+                throw new BadRequestError("O password está incorreto, tente novamente!")
             }
         } else {
-            throw new Error("É obrigatório o email e password!")
+            throw new BadRequestError("É obrigatório o email e password!")
         }
 
         const resultUser: TUsersView = {
@@ -65,7 +66,7 @@ export class UsersBusiness {
         const [verificationUserExist] = await this.usersDatabase.findUserId(newId)
 
         if (verificationUserExist) { //  regra de negocio
-            throw new Error("esse id já existe.")
+            throw new BadRequestError("esse id já existe.")
         }
 
         // ! Esse USER_ROLE é passageiro, arrumar depois isso aqui 

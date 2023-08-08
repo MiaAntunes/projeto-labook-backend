@@ -1,15 +1,15 @@
 import { Request, Response } from "express";
-import { PostsDatabase } from "../sql/heranças/PostsDataBase";
-import { PostsModels } from "../models/Posts";
-import { TPostsDBCreate, TPostsView } from "../types";
 import { PostsBusiness } from "../business/PostsBusiness";
 import { CreatePostSchema } from "../dto/PostDTO/createPostdto";
+import { EditPostShema } from "../dto/PostDTO/editPostdto";
+import { ZodError } from "zod";
+import { BaseError } from "../errors/BaseError";
 
 
 export class PostsControllers {
     constructor(
-       private postsBusiness: PostsBusiness
-    ){}
+        private postsBusiness: PostsBusiness
+    ) { }
 
     // Get Posts - OK ESTÁ PEGANDO
     public getPosts = async (req: Request, res: Response) => {
@@ -23,11 +23,13 @@ export class PostsControllers {
         catch (error: any) {
             console.log(error)
 
-            if (res.statusCode === 200) {
-                res.status(500)
+            if (error instanceof ZodError) {
+                res.status(400).send(error.issues)
+            } else if (error instanceof BaseError) {
+                res.status(error.statusCode).send(error.message)
+            } else {
+                res.status(500).send("Erro inesperado")
             }
-
-            res.send(error.message)
         }
     }
 
@@ -48,11 +50,13 @@ export class PostsControllers {
         catch (error: any) {
             console.log(error)
 
-            if (res.statusCode === 200) {
-                res.status(500)
-            }
-
-            res.send(error.message)
+            if (error instanceof ZodError) {
+                res.status(400).send(error.issues)
+              } else if (error instanceof BaseError) {
+                res.status(error.statusCode).send(error.message)
+              } else {
+                res.status(500).send("Erro inesperado")
+              }
         }
 
     }
@@ -62,10 +66,10 @@ export class PostsControllers {
         //Tem um headers.authorization
         try {
 
-            const input= {
+            const input = EditPostShema.parse({
                 idPost: req.params.id as string,
                 newContent: req.body.content as string
-            }
+            })
 
             const result = await this.postsBusiness.putPosts(input)
 
@@ -75,11 +79,13 @@ export class PostsControllers {
         catch (error: any) {
             console.log(error)
 
-            if (res.statusCode === 200) {
-                res.status(500)
-            }
-
-            res.send(error.message)
+            if (error instanceof ZodError) {
+                res.status(400).send(error.issues)
+              } else if (error instanceof BaseError) {
+                res.status(error.statusCode).send(error.message)
+              } else {
+                res.status(500).send("Erro inesperado")
+              }
         }
 
     }
@@ -89,7 +95,7 @@ export class PostsControllers {
         try {
             //Tem um headers.authorization
             const input = {
-                idPost:req.params.id
+                idPost: req.params.id
             }
 
             const result = await this.postsBusiness.deletePost(input)
@@ -99,11 +105,13 @@ export class PostsControllers {
         catch (error: any) {
             console.log(error)
 
-            if (res.statusCode === 200) {
-                res.status(500)
-            }
-
-            res.send(error.message)
+            if (error instanceof ZodError) {
+                res.status(400).send(error.issues)
+              } else if (error instanceof BaseError) {
+                res.status(error.statusCode).send(error.message)
+              } else {
+                res.status(500).send("Erro inesperado")
+              }
         }
     }
 }
