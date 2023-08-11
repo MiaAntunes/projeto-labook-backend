@@ -1,6 +1,6 @@
 # Labook Back-End
 
-Uma API desenvolvida para gerenciar uma rede social, com o objetivo de seguir o paradigma da POO, onde podemos cadastrar usuários ver os posts de outros usuário, criar, editar e deletar nossos posts e podemos dar likes ou deslikes.
+Foi criada uma API voltada para a administração de uma plataforma de mídia social, com a intenção de aderir ao paradigma de Programação Orientada a Objetos (POO). Essa API permite a criação de perfis de usuários, visualização das postagens de outros usuários, elaboração e modificação de nossas próprias postagens, além da capacidade de expressar apreço ou desagrado por meio de curtidas e descurtidas.
 
 [Link para Documentação da API no Postman](https://documenter.getpostman.com/view/27670051/2s9Xy3ts7w) 
 
