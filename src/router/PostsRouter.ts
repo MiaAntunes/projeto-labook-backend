@@ -3,13 +3,17 @@ import { PostsControllers } from "../controllers/PostsControllers";
 import express from 'express'
 import { PostsDatabase } from "../sql/heranças/PostsDataBase";
 import { UserDatabase } from "../sql/heranças/UsersDatabase";
+import { IdGenerator } from "../services/idGenerator";
+import { TokenManager } from "../services/TokenManager";
 
 
 export const postsRouter = express.Router()
 const postsControllers = new PostsControllers(
     new PostsBusiness(
         new PostsDatabase(),
-        new UserDatabase()
+        new UserDatabase(),
+        new IdGenerator(),
+        new TokenManager()
     )
 );
 
@@ -17,7 +21,7 @@ const postsControllers = new PostsControllers(
 postsRouter.get('/', postsControllers.getPosts)
 
 // temporário esse id
-postsRouter.post('/:id', postsControllers.postPosts)
+postsRouter.post('/', postsControllers.postPosts)
 
 postsRouter.put('/:id', postsControllers.putPosts)
 

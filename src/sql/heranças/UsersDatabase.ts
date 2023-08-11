@@ -19,18 +19,15 @@ export class UserDatabase extends BaseDatabase {
         let results: TUsersDB[] = [];
 
         results = await BaseDatabase.connection('users').where({id: newId})
-        console.log(results)
 
         return results
     }
     
-    // ! Login - select, where id ?
     public async selectUser ():Promise<TUsersDB[]>{
 
         let results: TUsersDB[] = []
 
         results =  await BaseDatabase.connection("users").select("*")
-        console.log(results)
 
         return results
     }

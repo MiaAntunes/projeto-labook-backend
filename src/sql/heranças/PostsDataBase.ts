@@ -1,39 +1,37 @@
-import { TPostsDB, TPostsDBCreate } from "../../types";
+import { TPostsDB, TPostsDBCreate, TPostsDBView } from "../../types";
 import { BaseDatabase } from "../BaseDatabase";
 
 
 export class PostsDatabase extends BaseDatabase {
     
     // * Find Post by Id
-    public async findPost(idPost: any): Promise<TPostsDB[]> {
+    public async findPost(idPost: string): Promise<TPostsDB[]> {
 
         let results: TPostsDB[] = []
 
         results = await BaseDatabase.connection('posts').where({ id: idPost })
-        console.log(results)
 
         return results
 
     }
 
     // * View Posts
-    public async getPosts(): Promise<TPostsDB[]> {
+    public async getPosts(): Promise<TPostsDBView[]> {
 
-        let response: TPostsDB[] = await BaseDatabase
+        let response: TPostsDBView[] = await BaseDatabase
             .connection('posts')
             .select(
-                "posts.id",
+                "posts.id AS postId",
                 "posts.content",
                 "posts.likes",
                 "posts.deslikes",
                 "posts.created_at",
                 "posts.updated_at",
-                "users.id",
+                "users.id AS usersId",
                 "users.name"
             )
             .innerJoin("users", "posts.creator_id", "=", "users.id")
 
-        // console.log(response)
 
         return response
     }

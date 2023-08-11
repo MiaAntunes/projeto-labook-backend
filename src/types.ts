@@ -35,19 +35,30 @@ export interface TUsersDB{
 ///// Posts
 // * Interface para o TS - View
 export interface TPostsView{
-    id: string,
+    postId: string,
     content: string,
     likes: number,
     deslikes: number,
     createdAt: string,
     updatedAt: string
     creator: {
-        id: string,
+        usersId: string,
         name: string
     }
 }
 
 // * Interface para o SQL
+export interface TPostsDBView{
+    postId: string,
+    usersId: string,
+    content: string,
+    likes: number,
+    deslikes: number,
+    created_at: string,
+    updated_at: string
+    name:string 
+}
+
 export interface TPostsDB{
     id: string,
     creator_id: string,
@@ -56,7 +67,6 @@ export interface TPostsDB{
     deslikes: number,
     created_at: string,
     updated_at: string
-    name:string 
 }
 
 export interface TPostsDBCreate{

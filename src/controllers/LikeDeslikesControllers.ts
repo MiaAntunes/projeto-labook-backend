@@ -3,40 +3,28 @@ import { PostsDatabase } from "../sql/heranças/PostsDataBase";
 import { LikeDeslikeDatabase } from "../sql/heranças/LikeDeslikeDatabase";
 import { ZodError } from "zod";
 import { BaseError } from "../errors/BaseError";
+import { LikeOrDeslikeBusiness } from "../business/LikeDeslikeBusiness";
+import { LikeOrDeslikeSchema } from "../dto/LikeDeslikeDTO/LikeOrDeslikeDto";
 
 
 export class LikeDeslikeControllers {
+    constructor(
+        private likeOrDeslikeBusiness : LikeOrDeslikeBusiness
+    ){}
 
     // * Post Like Deslike
     public postLikeDeslike = async (req: Request, res: Response) => {
         try{
-            // headers.authorization
-            const idPost = req.params.id as string
-            const likeOrDeslike = req.body.like as boolean
 
-            const postDataBase = new PostsDatabase()
-            const [verificationPostExist] = await postDataBase.findPost(idPost)
+            const input = LikeOrDeslikeSchema.parse({
+                idPost: req.params.id as string,
+                likeOrDeslike:req.body.like as boolean,
+                token: req.headers.authorization as string
+            })
 
-            if(!verificationPostExist){
-                res.status(400)
-                throw new Error("Esse post não existe ou id está errado")
-            }
+            const results = await this.likeOrDeslikeBusiness.postLikeOrDeslikeBusiness(input)
 
-            // Verificação
-            if(likeOrDeslike){
-                if(typeof likeOrDeslike !== "boolean"){
-                    res.status(400)
-                    throw new Error("O like precisa ser uma booleno.")
-                }
-            }else{
-                res.status(400)
-                throw new Error("É obrigatório o like !")
-            }
-
-            const likesDeslikesDatabase = new LikeDeslikeDatabase()
-            await likesDeslikesDatabase.updateLikeOrDeslike(likeOrDeslike, idPost)
-
-            res.status(200).send("Ok.")            
+            res.status(200).send(results)            
         }
         catch(error:any){
             console.log(error)

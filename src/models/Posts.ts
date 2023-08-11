@@ -42,12 +42,28 @@ export class PostsModels{
         this.likes = newLikes
     }
 
+    public addLike = ():void =>{
+        this.likes++
+    }
+
+    public removeLike = ():void =>{
+        this.likes--
+    }
+
     public getDeslikes = ():number =>{
         return this.deslikes
     }
 
     public setDeslikes = (newDeslikes:number)=>{ 
         this.deslikes = newDeslikes
+    }
+
+    public addDeslike = ():void =>{
+        this.deslikes++
+    }
+
+    public removeDeslike = ():void =>{
+        this.deslikes--
     }
 
     public getCreatedAt = ():string =>{

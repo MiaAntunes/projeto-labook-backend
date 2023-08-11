@@ -1,19 +1,26 @@
-import { CreateUserInputDto } from "../dto/UserDTO/createUserdto"
+import { CreateUserInputDto, CreateUserOutInputDto } from "../dto/UserDTO/createUserdto"
+import { LoginUserInputDTO, LoginUserOutinputDTO } from "../dto/UserDTO/loginUserdto"
 import { BadRequestError } from "../errors/BadRequestError"
+import { UserModels } from "../models/Users"
+import { HashManager } from "../services/HashManager"
+import { TokenManager, TokenPayload } from "../services/TokenManager"
+import { IdGenerator } from "../services/idGenerator"
 import { UserDatabase } from "../sql/heranças/UsersDatabase"
 import { TUsersDB, TUsersView, USER_ROLES,} from "../types"
 
 export class UsersBusiness {
 
     constructor(
-        private usersDatabase: UserDatabase
+        private usersDatabase: UserDatabase,
+        private idGenerator : IdGenerator,
+        private tokenManager: TokenManager,
+        private hashManager: HashManager
     ) { }
 
-    // TESTEi OK
-    public getUser = async (input: any): Promise<TUsersView[]> => {
+
+    public getUser = async (input: LoginUserInputDTO): Promise<LoginUserOutinputDTO> => {
 
         const { email, password } = input
-
 
         const [verificationEmailExist] = await this.usersDatabase.findUserEmail(email)
 
@@ -35,57 +42,78 @@ export class UsersBusiness {
             if (typeof password !== "string") {
                 throw new BadRequestError("O password precisa ser uma string!")
             }
-            if (password !== verificationEmailExist.password) {
-                throw new BadRequestError("O password está incorreto, tente novamente!")
+
+            const hashedPassword = verificationEmailExist.password
+            const isPasswordCorrect = await this.hashManager.compare(password, hashedPassword)
+            if(!isPasswordCorrect){
+                throw new BadRequestError("'email' ou 'password' incorretos")
             }
+
         } else {
             throw new BadRequestError("É obrigatório o email e password!")
         }
 
-        const resultUser: TUsersView = {
-            id: verificationEmailExist.id,
-            name: verificationEmailExist.name,
-            email: verificationEmailExist.email,
-            createdAt: verificationEmailExist.created_at
+        const resultUser = new UserModels( 
+            verificationEmailExist.id,
+            verificationEmailExist.name,
+            verificationEmailExist.email,
+            verificationEmailExist.password,
+            verificationEmailExist.role,
+            verificationEmailExist.created_at
+        )
+
+        const payload: TokenPayload = {
+            id: resultUser.getId(),
+            name: resultUser.getName(),
+            role: resultUser.getROLE() as USER_ROLES
         }
 
-        const result = [
-            resultUser
-        ]
+        const token = this.tokenManager.createToken(payload)
 
-        // console.log(result)
+        const output = {
+            token: token
+        }
 
-        return result
+        return output
     }
 
-    // TESTEi OK- porém precisa ser revisto !!!
-    public postUser = async (input: CreateUserInputDto) => {
 
-        const { newId, newName, newEmail, newPassword} = input
+    public postUser = async (input: CreateUserInputDto): Promise<CreateUserOutInputDto> => {
 
-        const [verificationUserExist] = await this.usersDatabase.findUserId(newId)
+        const { newName, newEmail, newPassword} = input
+
+        const [verificationUserExist] = await this.usersDatabase.findUserEmail(newEmail) // Ok está pegando
 
         if (verificationUserExist) { //  regra de negocio
-            throw new BadRequestError("esse id já existe.")
+            throw new BadRequestError("esse email já existe.")
         }
 
-        // ! Esse USER_ROLE é passageiro, arrumar depois isso aqui 
+        const newId = this.idGenerator.generate()
+
+        const hashedPassword = await this.hashManager.hash(newPassword)
+
         const userDB: TUsersDB = {
             id: newId,
             name: newName,
             email: newEmail,
-            password: newPassword,
+            password: hashedPassword,
             role: USER_ROLES.NORMAL,
             created_at: new Date().toISOString()
         }
 
-        console.log(userDB)
-
-
         await this.usersDatabase.insertUser(userDB)
 
+        const tokenPayload: TokenPayload = {
+            id: userDB.id,
+            name: userDB.name,
+            role: userDB.role
+        }
+
+        const token = this.tokenManager.createToken(tokenPayload)
+
         const output = {
-            message: "Criado a conta!"
+            message: "Criado a conta!",
+            token: token
         }
 
         return output
