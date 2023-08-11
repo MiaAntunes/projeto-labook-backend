@@ -97,7 +97,7 @@ export class LikeOrDeslikeBusiness {
         await this.postDataBase.updatePost(updatePostDB)
 
         const output = {
-            message: "Deu certo"
+            message: "Ok"
         }
 
         return output
