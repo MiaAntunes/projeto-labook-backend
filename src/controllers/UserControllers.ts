@@ -3,6 +3,7 @@ import { UsersBusiness } from "../business/UsersBusiness";
 import { CreateUserSchema } from "../dto/UserDTO/createUserdto";
 import { BaseError } from "../errors/BaseError";
 import { ZodError } from "zod";
+import { LoginUserShema } from "../dto/UserDTO/loginUserdto";
 
 
 export class UserControllers {
@@ -15,16 +16,14 @@ export class UserControllers {
     public getUser = async (req: Request, res: Response) => {
         try {
 
-            const input = {
+            const input = LoginUserShema.parse({
                 email: req.body.email as string,
                 password: req.body.password as string
-            }
+            })
 
             const response = await this.userBusiness.getUser(input)
-            // console.log(response)
 
             res.status(200).send(response)
-            // ! fazer uma resposta de TOKEN 
         }
         catch (error: any) {
             console.log(error)
@@ -44,7 +43,6 @@ export class UserControllers {
         try {
 
             const input = CreateUserSchema.parse({
-                newId: req.body.id , // !Não 
                 newName: req.body.name,
                 newEmail: req.body.email,
                 newPassword:  req.body.password, 
@@ -53,8 +51,7 @@ export class UserControllers {
             const response = await  this.userBusiness.postUser(input)
 
 
-            res.status(200).send(response.message)
-             // ! fazer uma resposta de TOKEN 
+            res.status(200).send(response)
         }
         catch (error: any) {
             console.log(error)

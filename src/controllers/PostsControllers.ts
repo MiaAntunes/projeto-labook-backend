@@ -4,6 +4,8 @@ import { CreatePostSchema } from "../dto/PostDTO/createPostdto";
 import { EditPostShema } from "../dto/PostDTO/editPostdto";
 import { ZodError } from "zod";
 import { BaseError } from "../errors/BaseError";
+import { GetPostShema } from "../dto/PostDTO/getPostDTO";
+import { DeletePostSchema } from "../dto/PostDTO/deletePostDto";
 
 
 export class PostsControllers {
@@ -14,9 +16,12 @@ export class PostsControllers {
     // Get Posts - OK ESTÁ PEGANDO
     public getPosts = async (req: Request, res: Response) => {
         try {
-            // * Tem um headers.authorization
-            const results = await this.postsBusiness.getPosts()
-            // console.log(results)
+            const input = GetPostShema.parse({
+                token: req.headers.authorization
+            })
+
+
+            const results = await this.postsBusiness.getPosts(input)
 
             res.status(200).send(results)
         }
@@ -38,9 +43,10 @@ export class PostsControllers {
         try {
             //Tem um headers.authorization
 
+            // ! Dúvidas
             const input = CreatePostSchema.parse({
-                idUser: req.params.id as string,
-                newContent: req.body.content as string
+                newContent: req.body.content as string,
+                token: req.headers.authorization as string
             })
 
             const results = await this.postsBusiness.postPosts(input)
@@ -68,7 +74,8 @@ export class PostsControllers {
 
             const input = EditPostShema.parse({
                 idPost: req.params.id as string,
-                newContent: req.body.content as string
+                newContent: req.body.content as string,
+                token: req.headers.authorization as string
             })
 
             const result = await this.postsBusiness.putPosts(input)
@@ -94,9 +101,10 @@ export class PostsControllers {
     public deletePost = async (req: Request, res: Response) => {
         try {
             //Tem um headers.authorization
-            const input = {
-                idPost: req.params.id
-            }
+            const input = DeletePostSchema.parse({
+                idPost: req.params.id,
+                token: req.headers.authorization as string
+            })
 
             const result = await this.postsBusiness.deletePost(input)
 

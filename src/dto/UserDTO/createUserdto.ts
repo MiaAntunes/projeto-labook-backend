@@ -2,7 +2,6 @@ import z from "zod";
 import { USER_ROLES } from "../../types";
 
 export interface CreateUserInputDto {
-    newId: string,
     newName: string,
     newEmail: string,
     newPassword: string,
@@ -12,18 +11,7 @@ export interface CreateUserOutInputDto {
     message: string,
 }
 
-export const CreateUserSchema = z.object({
-    newId: z.string({
-        required_error: " 'id' é obrigatório ",
-        invalid_type_error: " 'id' deve ser do tipo string"
-    }).min(
-        4,
-        { message: " 'id' precisa de no mínimo 4 caracteres, exemplo: u001 " 
-    }).includes(
-        "u",
-        { message: " 'id' precisa de no mínimo 4 caracteres, exemplo: u001 "
-    }),
-    
+export const CreateUserSchema = z.object({  
     newName: z.string({
         required_error: " 'name' é obrigatório ",
         invalid_type_error: " 'name' deve ser do tipo string"

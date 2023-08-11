@@ -45,3 +45,7 @@ INSERT INTO posts(id,creator_id,content,likes,deslikes)
 VALUES 
     ("p001","u001","Good Morning", 3, 1),
     ("p002","u002","Good Night", 3, 0);
+
+INSERT INTO likes_deslikes(user_id,post_id,like)
+VALUES 
+    ("5ed45c51-b67a-4478-be3c-51ebc3fd1f7b","p001", 1);

@@ -1,7 +1,11 @@
 import { CreatePostInputDto, CreatePostOutInputDto } from "../dto/PostDTO/createPostdto"
+import { DeletePostInputDto, DeletePostOutInputDto } from "../dto/PostDTO/deletePostDto"
 import { EditPostInputDTO, EditPostOutinputDTO } from "../dto/PostDTO/editPostdto"
+import { GetPostInputDTO } from "../dto/PostDTO/getPostDTO"
 import { BadRequestError } from "../errors/BadRequestError"
 import { PostsModels } from "../models/Posts"
+import { TokenManager } from "../services/TokenManager"
+import { IdGenerator } from "../services/idGenerator"
 import { PostsDatabase } from "../sql/heranças/PostsDataBase"
 import { UserDatabase } from "../sql/heranças/UsersDatabase"
 import { TPostsDBCreate, TPostsView } from "../types"
@@ -10,49 +14,60 @@ export class PostsBusiness {
 
     constructor(
         private postDatabase: PostsDatabase,
-        private userDatabase: UserDatabase
+        private userDatabase: UserDatabase,
+        private idGenerator: IdGenerator,
+        private tokenManager: TokenManager
     ){}
 
     //Get Posts - OK ESTÁ PEGANDO
-    public getPosts =  async ():Promise <TPostsView[]> =>{
-
-        const postDatabase = new PostsDatabase()
-        const getPosts = await postDatabase.getPosts()
+    public getPosts =  async (input:GetPostInputDTO):Promise <TPostsView[]> =>{
         
+        const { token } = input
 
+        const payload = this.tokenManager.getPayload(token)
+
+        if(payload === null){
+            throw new BadRequestError("token inválido")
+        }
+
+        const getPosts = await this.postDatabase.getPosts()
+        
         const resultsPosts: TPostsView[] = getPosts.map((post) => {
             const result: TPostsView = {
-                id: post.id,
+                postId: post.postId,
                 content: post.content,
                 likes: post.likes,
                 deslikes: post.deslikes,
                 createdAt: post.created_at,
                 updatedAt: post.updated_at,
                 creator: {
-                    id: post.id,
+                    usersId: post.usersId,
                     name: post.name
                 },
             }
             return result
         })
         
-        // console.log(resultsPosts)
 
         return resultsPosts
     }
-
-    // !Post Posts - Está pegando, porém falta coisa!!
+    
     public postPosts = async (input:CreatePostInputDto): Promise <CreatePostOutInputDto> =>{
 
-        const {idUser, newContent} = input
-        // console.log(" USER",idUser)
+        const { newContent, token} = input
 
-        const [verificationUserExist] = await this.userDatabase.findUserId(idUser)
-        // console.log(verificationUserExist)
+        const payload = this.tokenManager.getPayload(token)
 
-        // ! Dúvida no p003
+        if(payload === null){
+            throw new BadRequestError("token inválido")
+        }
+
+        const [verificationUserExist] = await this.userDatabase.findUserId(payload.id)
+
+        const newId = this.idGenerator.generate()
+
         const newPost = new PostsModels(
-            "p003",
+            newId,
             verificationUserExist.id,
             newContent,
             0,
@@ -83,10 +98,15 @@ export class PostsBusiness {
     //Put Posts - OK ESTÁ PEGANDO
     public putPosts = async (input:EditPostInputDTO): Promise <EditPostOutinputDTO> =>{
         
-        const {idPost, newContent} = input
+        const {idPost, newContent, token} = input
+
+        const payload = this.tokenManager.getPayload(token)
+
+        if(payload === null){
+            throw new BadRequestError("token inválido")
+        }
         
         const [verificationPostExist] = await this.postDatabase.findPost(idPost)
-        // console.log(verificationPostExist)
 
         if (!verificationPostExist) {
             throw new BadRequestError("Esse post não existe, crie um novo post!")
@@ -128,9 +148,15 @@ export class PostsBusiness {
     }
 
     //Delete Posts - OK ESTÁ PEGANDO
-    public deletePost = async (input:any) =>{
+    public deletePost = async (input:DeletePostInputDto):Promise <DeletePostOutInputDto> =>{
 
-        const {idPost} = input
+        const {idPost, token} = input
+
+        const payload = this.tokenManager.getPayload(token)
+
+        if(payload === null){
+            throw new BadRequestError("token inválido")
+        }
 
         const [verificationPostExist] = await this.postDatabase.findPost(idPost)
 

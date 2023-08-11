@@ -1,4 +1,7 @@
-
+export enum POST_LIKE {
+    ALREADY_LIKED = "ALREADY LIKED",
+    ALREADY_DESLIKED = "ALREADY DESLIKE"
+}
 
 export class LikeDeslikeModels{
     constructor(
@@ -32,5 +35,7 @@ export class LikeDeslikeModels{
     public setLike = (newLike:number)=>{
         this.like = newLike
     }
+
+
 
 }
